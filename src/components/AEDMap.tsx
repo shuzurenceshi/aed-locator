@@ -1,58 +1,32 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import dynamic from 'next/dynamic';
+
+// 动态导入 Leaflet 组件，禁用 SSR
+const MapContainer = dynamic(
+  () => import('react-leaflet').then(mod => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import('react-leaflet').then(mod => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import('react-leaflet').then(mod => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(
+  () => import('react-leaflet').then(mod => mod.Popup),
+  { ssr: false }
+);
+const useMap = dynamic(
+  () => import('react-leaflet').then(mod => mod.useMap),
+  { ssr: false }
+);
+
 import 'leaflet/dist/leaflet.css';
 import { AEDLocation } from '@/types/aed';
-
-// 修复 Leaflet 默认图标问题
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
-
-// 自定义图标
-const userIcon = L.divIcon({
-  className: 'custom-marker',
-  html: `<div style="
-    width: 40px;
-    height: 40px;
-    background: #3B82F6;
-    border: 3px solid white;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-  ">📍</div>`,
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
-
-const createAEDIcon = (available: boolean) => L.divIcon({
-  className: 'custom-marker',
-  html: `<div style="
-    width: 32px;
-    height: 32px;
-    background: ${available ? '#EF4444' : '#9CA3AF'};
-    border: 2px solid white;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 10px;
-  ">AED</div>`,
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-});
 
 // Mock AED 数据
 const MOCK_AEDS: AEDLocation[] = [
@@ -72,22 +46,119 @@ const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-// 地图中心更新组件
-function MapUpdater({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
-}
-
 interface AEDMapProps {
   userLocation: { lat: number; lng: number };
 }
 
+// 地图内部组件（需要 Leaflet context）
+function MapContent({ 
+  userLocation, 
+  aedList, 
+  selectedAed, 
+  setSelectedAed 
+}: { 
+  userLocation: { lat: number; lng: number };
+  aedList: AEDLocation[];
+  selectedAed: AEDLocation | null;
+  setSelectedAed: (aed: AEDLocation | null) => void;
+}) {
+  const [L, setL] = useState<any>(null);
+  const [icons, setIcons] = useState<any>(null);
+  const map = useMap();
+
+  useEffect(() => {
+    import('leaflet').then(leaflet => {
+      setL(leaflet.default);
+      
+      // 修复默认图标
+      delete (leaflet.Icon.Default.prototype as any)._getIconUrl;
+      leaflet.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      });
+
+      // 用户图标
+      const userIcon = leaflet.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+          width: 40px; height: 40px;
+          background: #3B82F6; border: 3px solid white;
+          border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: white; font-size: 20px;
+        ">📍</div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+      });
+
+      // AED 图标生成器
+      const createAEDIcon = (available: boolean) => leaflet.divIcon({
+        className: 'custom-marker',
+        html: `<div style="
+          width: 32px; height: 32px;
+          background: ${available ? '#EF4444' : '#9CA3AF'};
+          border: 2px solid white; border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: white; font-weight: bold; font-size: 10px;
+        ">AED</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+      });
+
+      setIcons({ userIcon, createAEDIcon });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (map && userLocation) {
+      map.setView([userLocation.lat, userLocation.lng], 15);
+    }
+  }, [map, userLocation]);
+
+  if (!L || !icons) return null;
+
+  return (
+    <>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      
+      <Marker position={[userLocation.lat, userLocation.lng]} icon={icons.userIcon}>
+        <Popup>您的位置</Popup>
+      </Marker>
+      
+      {aedList.map(aed => (
+        <Marker
+          key={aed.id}
+          position={[aed.lat, aed.lng]}
+          icon={icons.createAEDIcon(aed.available)}
+          eventHandlers={{ click: () => setSelectedAed(aed) }}
+        >
+          <Popup>
+            <div className="text-sm">
+              <strong>{aed.name}</strong><br />
+              {aed.address}<br />
+              <span className={aed.available ? 'text-green-600' : 'text-gray-500'}>
+                {aed.available ? '✅ 可用' : '❌ 不可用'}
+              </span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  );
+}
+
 export default function AEDMap({ userLocation }: AEDMapProps) {
   const [selectedAed, setSelectedAed] = useState<AEDLocation | null>(null);
-  const mapCenter: [number, number] = useMemo(() => [userLocation.lat, userLocation.lng], [userLocation]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const aedList = useMemo(() => 
     MOCK_AEDS.map(aed => ({
@@ -98,50 +169,36 @@ export default function AEDMap({ userLocation }: AEDMapProps) {
   );
 
   const handleNavigate = (aed: AEDLocation) => {
-    // 高德地图导航链接
     const url = `https://uri.amap.com/marker?position=${aed.lng},${aed.lat}&name=${encodeURIComponent(aed.name)}&coordinate=wgs84`;
     window.open(url, '_blank');
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载地图中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full">
       {/* 地图区域 */}
       <div className="flex-1 relative">
         <MapContainer
-          center={mapCenter}
+          center={[userLocation.lat, userLocation.lng]}
           zoom={15}
           className="w-full h-full z-0"
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          <MapContent 
+            userLocation={userLocation}
+            aedList={aedList}
+            selectedAed={selectedAed}
+            setSelectedAed={setSelectedAed}
           />
-          <MapUpdater center={mapCenter} />
-          
-          {/* 用户位置 */}
-          <Marker position={mapCenter} icon={userIcon}>
-            <Popup>您的位置</Popup>
-          </Marker>
-          
-          {/* AED 标记 */}
-          {aedList.map(aed => (
-            <Marker
-              key={aed.id}
-              position={[aed.lat, aed.lng]}
-              icon={createAEDIcon(aed.available)}
-              eventHandlers={{ click: () => setSelectedAed(aed) }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <strong>{aed.name}</strong><br />
-                  {aed.address}<br />
-                  <span className={aed.available ? 'text-green-600' : 'text-gray-500'}>
-                    {aed.available ? '✅ 可用' : '❌ 不可用'}
-                  </span>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
         </MapContainer>
       </div>
 
