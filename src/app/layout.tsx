@@ -13,9 +13,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <head>
-        <script src="https://webapi.amap.com/maps?v=2.0&key=YOUR_AMAP_KEY"></script>
-      </head>
       <body className="antialiased">{children}</body>
     </html>
   );
