@@ -1,182 +1,98 @@
-// 数据库连接（本地开发用 better-sqlite3，生产用 D1）
-import Database from 'better-sqlite3';
+// 数据库连接
+// 生产：Cloudflare D1（通过 env.DB）
+// 本地：使用内存数据
 
-let db: Database.Database | null = null;
+import { AED, Article, Admin } from '@/types';
 
-export async function connectDB() {
-  if (db) return db;
-  
-  // 本地开发：使用 SQLite
-  if (process.env.NODE_ENV !== 'production') {
-    db = new Database('./local.db');
-    await initTables(db);
-    return db;
-  }
-  
-  // 生产：返回 null，使用 D1 绑定
-  return null;
-}
+// 本地开发用的内存数据
+const mockAEDs: AED[] = [
+  { id: '1', name: '北京站 AED', address: '北京市东城区北京站', lat: 39.9029, lng: 116.4272, available: true, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '2', name: '王府井百货 AED', address: '北京市东城区王府井大街255号', lat: 39.9139, lng: 116.4103, available: true, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '3', name: '协和医院 AED', address: '北京市东城区王府井大街', lat: 39.9134, lng: 116.4179, available: true, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '4', name: '朝阳门地铁站 AED', address: '北京市东城区朝阳门', lat: 39.9245, lng: 116.4342, available: true, status: 'active', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
 
-// 初始化表
-async function initTables(db: Database.Database) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS aeds (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      address TEXT NOT NULL,
-      lat REAL NOT NULL,
-      lng REAL NOT NULL,
-      available INTEGER DEFAULT 1,
-      status TEXT DEFAULT 'active',
-      contact TEXT,
-      hours TEXT,
-      image_url TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+const mockArticles: Article[] = [
+  { id: '1', title: 'AED 是什么？', content: '自动体外除颤器（AED）是一种便携式医疗设备，可以自动分析心律并给予电击除颤，用于抢救心源性猝死患者。', category: 'knowledge', sort_order: 1, published: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '2', title: '如何使用 AED', content: '1. 打开电源\n2. 按图示贴好电极片\n3. 等待分析心律\n4. 如建议除颤，确保无人接触患者后按下除颤键', category: 'tutorial', sort_order: 2, published: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: '3', title: '心肺复苏（CPR）步骤', content: '1. 确认现场安全\n2. 判断意识和呼吸\n3. 呼叫急救（120）\n4. 开始胸外按压：30次\n5. 开放气道，人工呼吸：2次\n6. 重复30:2循环', category: 'tutorial', sort_order: 3, published: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
 
-    CREATE TABLE IF NOT EXISTS articles (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      content TEXT NOT NULL,
-      category TEXT,
-      image_url TEXT,
-      video_url TEXT,
-      sort_order INTEGER DEFAULT 0,
-      published INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+const mockAdmins: Admin[] = [
+  { id: 'admin-1', username: 'admin', password_hash: '$2a$10$dummy', role: 'superadmin', created_at: new Date().toISOString() },
+];
 
-    CREATE TABLE IF NOT EXISTS admins (
-      id TEXT PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      role TEXT DEFAULT 'admin',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+// 判断是否生产环境
+function isProduction() {
+  return process.env.NODE_ENV === 'production';
 }
 
 // AED 操作
-export async function getAEDs(db: any) {
-  const stmt = db.prepare('SELECT * FROM aeds ORDER BY created_at DESC');
-  return stmt.all();
+export async function getAEDs(env?: any): Promise<AED[]> {
+  if (isProduction() && env?.DB) {
+    const result = await env.DB.prepare('SELECT * FROM aeds').all();
+    return result.results;
+  }
+  return mockAEDs;
 }
 
-export async function getAEDById(db: any, id: string) {
-  const stmt = db.prepare('SELECT * FROM aeds WHERE id = ?');
-  return stmt.get(id);
-}
-
-export async function createAED(db: any, data: any) {
-  const stmt = db.prepare(`
-    INSERT INTO aeds (id, name, address, lat, lng, available, status, contact, hours, image_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  return stmt.run(
-    data.id || `aed-${Date.now()}`,
-    data.name,
-    data.address,
-    data.lat,
-    data.lng,
-    data.available ? 1 : 0,
-    data.status || 'active',
-    data.contact,
-    data.hours,
-    data.image_url
-  );
-}
-
-export async function updateAED(db: any, id: string, data: any) {
-  const stmt = db.prepare(`
-    UPDATE aeds 
-    SET name = ?, address = ?, lat = ?, lng = ?, available = ?, status = ?, contact = ?, hours = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `);
-  return stmt.run(
-    data.name,
-    data.address,
-    data.lat,
-    data.lng,
-    data.available ? 1 : 0,
-    data.status,
-    data.contact,
-    data.hours,
-    data.image_url,
-    id
-  );
-}
-
-export async function deleteAED(db: any, id: string) {
-  const stmt = db.prepare('DELETE FROM aeds WHERE id = ?');
-  return stmt.run(id);
+export async function createAED(env: any, data: Partial<AED>): Promise<void> {
+  if (isProduction() && env?.DB) {
+    await env.DB.prepare(`
+      INSERT INTO aeds (id, name, address, lat, lng, available, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(data.id || `aed-${Date.now()}`, data.name, data.address, data.lat, data.lng, data.available ? 1 : 0, data.status || 'active').run();
+  } else {
+    mockAEDs.push({
+      id: data.id || `aed-${Date.now()}`,
+      name: data.name || '',
+      address: data.address || '',
+      lat: data.lat || 0,
+      lng: data.lng || 0,
+      available: data.available ?? true,
+      status: data.status || 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
 }
 
 // 文章操作
-export async function getArticles(db: any, publishedOnly = false) {
-  const sql = publishedOnly 
-    ? 'SELECT * FROM articles WHERE published = 1 ORDER BY sort_order ASC, created_at DESC'
-    : 'SELECT * FROM articles ORDER BY sort_order ASC, created_at DESC';
-  const stmt = db.prepare(sql);
-  return stmt.all();
+export async function getArticles(env?: any, publishedOnly = false): Promise<Article[]> {
+  if (isProduction() && env?.DB) {
+    const sql = publishedOnly 
+      ? 'SELECT * FROM articles WHERE published = 1 ORDER BY sort_order ASC'
+      : 'SELECT * FROM articles ORDER BY sort_order ASC';
+    const result = await env.DB.prepare(sql).all();
+    return result.results;
+  }
+  return publishedOnly ? mockArticles.filter(a => a.published) : mockArticles;
 }
 
-export async function getArticleById(db: any, id: string) {
-  const stmt = db.prepare('SELECT * FROM articles WHERE id = ?');
-  return stmt.get(id);
-}
-
-export async function createArticle(db: any, data: any) {
-  const stmt = db.prepare(`
-    INSERT INTO articles (id, title, content, category, image_url, video_url, sort_order, published)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  return stmt.run(
-    data.id || `article-${Date.now()}`,
-    data.title,
-    data.content,
-    data.category || 'knowledge',
-    data.image_url,
-    data.video_url,
-    data.sort_order || 0,
-    data.published ? 1 : 0
-  );
-}
-
-export async function updateArticle(db: any, id: string, data: any) {
-  const stmt = db.prepare(`
-    UPDATE articles 
-    SET title = ?, content = ?, category = ?, image_url = ?, video_url = ?, sort_order = ?, published = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `);
-  return stmt.run(
-    data.title,
-    data.content,
-    data.category,
-    data.image_url,
-    data.video_url,
-    data.sort_order,
-    data.published ? 1 : 0,
-    id
-  );
-}
-
-export async function deleteArticle(db: any, id: string) {
-  const stmt = db.prepare('DELETE FROM articles WHERE id = ?');
-  return stmt.run(id);
+export async function createArticle(env: any, data: Partial<Article>): Promise<void> {
+  if (isProduction() && env?.DB) {
+    await env.DB.prepare(`
+      INSERT INTO articles (id, title, content, category, sort_order, published)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(data.id || `article-${Date.now()}`, data.title, data.content, data.category || 'knowledge', data.sort_order || 0, data.published ? 1 : 0).run();
+  } else {
+    mockArticles.push({
+      id: data.id || `article-${Date.now()}`,
+      title: data.title || '',
+      content: data.content || '',
+      category: data.category || 'knowledge',
+      sort_order: data.sort_order || 0,
+      published: data.published ?? false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
 }
 
 // 管理员操作
-export async function getAdminByUsername(db: any, username: string) {
-  const stmt = db.prepare('SELECT * FROM admins WHERE username = ?');
-  return stmt.get(username);
-}
-
-export async function createAdmin(db: any, data: { id: string; username: string; password_hash: string; role?: string }) {
-  const stmt = db.prepare(`
-    INSERT INTO admins (id, username, password_hash, role)
-    VALUES (?, ?, ?, ?)
-  `);
-  return stmt.run(data.id, data.username, data.password_hash, data.role || 'admin');
+export async function getAdminByUsername(env: any, username: string): Promise<Admin | null> {
+  if (isProduction() && env?.DB) {
+    return await env.DB.prepare('SELECT * FROM admins WHERE username = ?').bind(username).first();
+  }
+  return mockAdmins.find(a => a.username === username) || null;
 }
