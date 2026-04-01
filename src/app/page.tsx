@@ -98,7 +98,7 @@ export default function Home() {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
         <div style={{ textAlign: 'center' }}>
-          <DotLoading color='#1677ff' style={{ '--size': '48px' }} />
+          <DotLoading color='#1677ff' style={{ transform: 'scale(1.5)' }} />
           <p style={{ marginTop: 16, color: '#999', fontSize: 14 }}>定位中...</p>
         </div>
       </div>
