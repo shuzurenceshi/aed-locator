@@ -99,8 +99,10 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <h1 className="text-xl font-bold">🏥 AED 管理后台</h1>
           <div className="flex gap-4">
-            <a href="/" className="text-white hover:underline">前台首页</a>
-            <button onClick={handleLogout} className="text-white hover:underline">退出</button>
+            <span className="text-white font-semibold">AED 管理</span>
+            <a href="/admin/articles" className="text-white/80 hover:text-white">文章管理</a>
+            <a href="/" className="text-white/80 hover:text-white">前台首页</a>
+            <button onClick={handleLogout} className="text-white/80 hover:text-white">退出</button>
           </div>
         </div>
       </header>
