@@ -69,6 +69,7 @@ export default function AdminArticles() {
       const newArticle: Article = {
         id: `article-${Date.now()}`,
         ...formData,
+        sort_order: articles.length + 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
