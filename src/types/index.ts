@@ -1,4 +1,3 @@
-// 数据库 schema
 export interface AED {
   id: string;
   name: string;
@@ -14,25 +13,7 @@ export interface AED {
   updated_at: string;
 }
 
-// API 娡块
-export interface AEDApi {
-  id: string;
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  available: boolean;
-  status: string;
-  distance?: number;
-  contact?: string;
-  hours?: string;
-  image_url?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// 文章接口
-export interface ArticleApi {
+export interface Article {
   id: string;
   title: string;
   content: string;
@@ -45,8 +26,7 @@ export interface ArticleApi {
   updated_at: string;
 }
 
-// 管理员接口
-export interface AdminApi {
+export interface Admin {
   id: string;
   username: string;
   password_hash: string;
