@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { AED } from '@/types';
-import { getAEDs, initDB } from '@/db';
+import { NextResponse } from 'next/server';
+import { connectDB, getArticles } from '@/lib/db';
 
-// 获取所有 AED
 export async function GET() {
   try {
-    await initDB();
-    const aeds = await getAEDs();
-    return NextResponse.json({ success: true, data: aeds });
+    const db = await connectDB();
+    const articles = await getArticles(db, true); // 只获取已发布的
+    return NextResponse.json({ success: true, data: articles });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to fetch AEDs' }, { status: 500 }
+    console.error('Failed to fetch articles:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch articles' },
+      { status: 500 }
+    );
   }
 }
-
