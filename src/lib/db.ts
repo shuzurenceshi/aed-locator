@@ -22,6 +22,13 @@ const mockAdmins: Admin[] = [
   { id: 'admin-1', username: 'admin', password_hash: '$2a$10$dummy', role: 'superadmin', created_at: new Date().toISOString() },
 ];
 
+// 数据库连接
+export async function connectDB() {
+  // 本地开发：返回 undefined，使用 mock 数据
+  // 生产：返回 env.DB（由 Cloudflare Pages 注入）
+  return undefined;
+}
+
 // 判断是否生产环境
 function isProduction() {
   return process.env.NODE_ENV === 'production';
