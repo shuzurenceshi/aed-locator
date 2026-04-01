@@ -99,12 +99,12 @@ export default function Home() {
 
   // 计算距离并排序
   const sortedAeds = useMemo(() => {
-    if (!userLocation) return aeds;
+    if (!userLocation || !mounted) return aeds;
     return aeds.map(aed => ({
       ...aed,
       distance: calculateDistance(userLocation.lat, userLocation.lng, aed.lat, aed.lng)
     })).sort((a, b) => (a.distance || 0) - (b.distance || 0));
-  }, [userLocation, aeds]);
+  }, [userLocation, aeds, mounted]);
 
   // 导航
   const navigateToAed = (aed: AED) => {
