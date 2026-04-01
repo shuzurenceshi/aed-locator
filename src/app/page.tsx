@@ -42,20 +42,39 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'map' | 'knowledge' | 'ai'>('map');
 
-  // Mock AED 数据
-  const aeds: AED[] = useMemo(() => [
-    { id: '1', name: '北京站 AED', address: '北京市东城区北京站', lat: 39.9029, lng: 116.4272, available: true, status: 'active', created_at: '', updated_at: '' },
-    { id: '2', name: '王府井百货 AED', address: '北京市东城区王府井大街255号', lat: 39.9139, lng: 116.4103, available: true, status: 'active', created_at: '', updated_at: '' },
-    { id: '3', name: '协和医院 AED', address: '北京市东城区王府井大街', lat: 39.9134, lng: 116.4179, available: true, status: 'active', created_at: '', updated_at: '' },
-    { id: '4', name: '朝阳门地铁站 AED', address: '北京市东城区朝阳门', lat: 39.9245, lng: 116.4342, available: true, status: 'active', created_at: '', updated_at: '' },
-  ], []);
+  // Mock AED 数据（从 localStorage 读取或使用默认值）
+  const [aeds, setAeds] = useState<AED[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-  // Mock 文章数据
-  const articles: Article[] = useMemo(() => [
-    { id: '1', title: 'AED 是什么？', content: '自动体外除颤器（AED）是一种便携式医疗设备，可以自动分析心律并给予电击除颤，用于抢救心源性猝死患者。它是抢救心源性猝死最有效的急救设备。', category: 'knowledge', sort_order: 1, published: true, created_at: '', updated_at: '' },
-    { id: '2', title: '如何使用 AED', content: '1. 打开电源\n2. 按图示贴好电极片\n3. 等待分析心律\n4. 如建议除颤，确保无人接触患者后按下除颤键\n5. 继续心肺复苏直到急救人员到达', category: 'tutorial', sort_order: 2, published: true, created_at: '', updated_at: '' },
-    { id: '3', title: '心肺复苏步骤', content: '1. 确认现场安全\n2. 判断意识和呼吸\n3. 呼叫急救（120）\n4. 开始胸外按压：深度5-6cm，频率100-120次/分\n5. 开放气道，人工呼吸：2次\n6. 重复30:2循环', category: 'tutorial', sort_order: 3, published: true, created_at: '', updated_at: '' },
-  ], []);
+  // 初始化数据
+  useEffect(() => {
+    setMounted(true);
+    
+    // 从 localStorage 读取 AED 数据
+    const savedAEDs = localStorage.getItem('aed_data');
+    if (savedAEDs) {
+      setAeds(JSON.parse(savedAEDs));
+    } else {
+      // 默认数据
+      const defaultAEDs: AED[] = [
+        { id: '1', name: '北京站 AED', address: '北京市东城区北京站', lat: 39.9029, lng: 116.4272, available: true, status: 'active', created_at: '', updated_at: '' },
+        { id: '2', name: '王府井百货 AED', address: '北京市东城区王府井大街255号', lat: 39.9139, lng: 116.4103, available: true, status: 'active', created_at: '', updated_at: '' },
+        { id: '3', name: '协和医院 AED', address: '北京市东城区王府井大街', lat: 39.9134, lng: 116.4179, available: true, status: 'active', created_at: '', updated_at: '' },
+        { id: '4', name: '朝阳门地铁站 AED', address: '北京市东城区朝阳门', lat: 39.9245, lng: 116.4342, available: true, status: 'active', created_at: '', updated_at: '' },
+      ];
+      setAeds(defaultAEDs);
+      localStorage.setItem('aed_data', JSON.stringify(defaultAEDs));
+    }
+    
+    // 文章数据
+    const defaultArticles: Article[] = [
+      { id: '1', title: 'AED 是什么？', content: '自动体外除颤器（AED）是一种便携式医疗设备，可以自动分析心律并给予电击除颤，用于抢救心源性猝死患者。它是抢救心源性猝死最有效的急救设备。', category: 'knowledge', sort_order: 1, published: true, created_at: '', updated_at: '' },
+      { id: '2', title: '如何使用 AED', content: '1. 打开电源\n2. 按图示贴好电极片\n3. 等待分析心律\n4. 如建议除颤，确保无人接触患者后按下除颤键\n5. 继续心肺复苏直到急救人员到达', category: 'tutorial', sort_order: 2, published: true, created_at: '', updated_at: '' },
+      { id: '3', title: '心肺复苏步骤', content: '1. 确认现场安全\n2. 判断意识和呼吸\n3. 呼叫急救（120）\n4. 开始胸外按压：深度5-6cm，频率100-120次/分\n5. 开放气道，人工呼吸：2次\n6. 重复30:2循环', category: 'tutorial', sort_order: 3, published: true, created_at: '', updated_at: '' },
+    ];
+    setArticles(defaultArticles);
+  }, []);
 
   // 获取用户位置
   useEffect(() => {
