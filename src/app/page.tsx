@@ -229,7 +229,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white p-4 text-center text-sm">
-        <p>AED 急救定位系统 v2.0 | 保卫生命，从 "心" 开始</p>
+        <p>AED 急救定位系统 v2.0 | 保卫生命，从 "心" 开始 | <a href="/admin" className="text-red-400 hover:underline">管理后台</a></p>
       </footer>
     </div>
   );
