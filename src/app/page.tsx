@@ -176,7 +176,7 @@ export default function Home() {
                 color='danger' 
                 block 
                 style={{ borderRadius: 8 }}
-                onClick={() => window.location.href = 'tel:120'}
+                onClick={() => { window.location.href = 'tel:120'; }}
               >
                 <PhoneFill /> 拨打 120
               </Button>
@@ -184,7 +184,7 @@ export default function Home() {
                 color='warning' 
                 block 
                 style={{ borderRadius: 8 }}
-                onClick={() => window.location.href = 'tel:119'}
+                onClick={() => { window.location.href = 'tel:119'; }}
               >
                 <PhoneFill /> 拨打 119
               </Button>
