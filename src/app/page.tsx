@@ -88,7 +88,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f8fa' }}>
         <div style={{ textAlign: 'center' }}>
           <DotLoading color='#1677ff' style={{ transform: 'scale(1.5)' }} />
           <p style={{ marginTop: 16, color: '#999', fontSize: 14 }}>定位中...</p>
@@ -98,21 +98,30 @@ export default function Home() {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' }}>
-      {/* 轻量头部 */}
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: '#f7f8fa' }}>
+      {/* 简洁头部 */}
       <header style={{ 
         background: '#fff', 
-        padding: '10px 16px',
+        padding: '12px 16px',
         borderBottom: '1px solid #f0f0f0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20 }}>🏥</span>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#333' }}>AED 急救定位</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ 
+            width: 32, height: 32, 
+            background: 'linear-gradient(135deg, #ff6b6b, #ee5a5a)', 
+            borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18
+          }}>🏥</div>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>AED 急救定位</div>
+            <div style={{ fontSize: 11, color: '#999' }}>守护生命 · 从心开始</div>
+          </div>
         </div>
-        <a href="/admin" style={{ fontSize: 13, color: '#999' }}>管理</a>
+        <a href="/admin" style={{ fontSize: 13, color: '#666', padding: '4px 8px' }}>管理</a>
       </header>
 
       {/* 内容区 */}
@@ -122,90 +131,145 @@ export default function Home() {
             {/* 位置提示 */}
             {userLocation && (
               <div style={{ 
-                padding: '8px 16px', 
-                background: '#e6f7ff', 
+                padding: '10px 16px', 
+                background: 'linear-gradient(90deg, #e6f7ff, #f0f5ff)', 
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
+                gap: 8,
+                fontSize: 13,
                 color: '#1890ff'
               }}>
-                <EnvironmentOutline fontSize={14} />
-                <span>已定位您的位置</span>
+                <EnvironmentOutline fontSize={16} />
+                <span>已获取您的位置</span>
+                <span style={{ marginLeft: 'auto', fontSize: 12, color: '#52c41a' }}>● 在线</span>
               </div>
             )}
 
             {/* AED 列表 */}
-            <div style={{ padding: 12 }}>
-              <div style={{ fontSize: 13, color: '#999', marginBottom: 8 }}>
-                附近 {sortedAeds.length} 个 AED
+            <div style={{ padding: 16 }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                marginBottom: 12 
+              }}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#333' }}>附近 AED</span>
+                <span style={{ fontSize: 13, color: '#999' }}>{sortedAeds.length} 个</span>
               </div>
-              <List style={{ '--border-inner': 'none' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {sortedAeds.map((aed, idx) => (
-                  <List.Item
+                  <div 
                     key={aed.id}
-                    prefix={
-                      <div style={{ 
-                        width: 28, height: 28, 
-                        borderRadius: '50%',
-                        background: idx === 0 ? '#ff4d4f' : idx === 1 ? '#ff7a45' : '#f0f0f0',
-                        color: idx < 2 ? '#fff' : '#999',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 600, fontSize: 12
-                      }}>{idx + 1}</div>
-                    }
-                    description={aed.address}
-                    extra={
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ color: '#1890ff', fontWeight: 500, fontSize: 13 }}>
-                          {formatDistance(aed.distance || 0)}
-                        </div>
-                        <Tag color={aed.available ? 'success' : 'default'} style={{ marginTop: 2, fontSize: 10 }}>
-                          {aed.available ? '可用' : '维修'}
-                        </Tag>
-                      </div>
-                    }
                     onClick={() => navigate(aed)}
-                    arrow
+                    style={{
+                      background: '#fff',
+                      borderRadius: 12,
+                      padding: 14,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
                   >
-                    {aed.name}
-                  </List.Item>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      {/* 排名 */}
+                      <div style={{ 
+                        width: 36, height: 36, 
+                        borderRadius: '50%',
+                        background: idx === 0 ? 'linear-gradient(135deg, #ff6b6b, #ee5a5a)' : 
+                                   idx === 1 ? 'linear-gradient(135deg, #ffa940, #fa8c16)' :
+                                   idx === 2 ? 'linear-gradient(135deg, #52c41a, #389e0d)' : '#f5f5f5',
+                        color: idx < 3 ? '#fff' : '#999',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 600, fontSize: 14,
+                        flexShrink: 0
+                      }}>{idx + 1}</div>
+                      
+                      {/* 内容 */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 15, fontWeight: 500, color: '#1a1a1a' }}>{aed.name}</span>
+                          <Tag color={aed.available ? 'success' : 'default'} style={{ fontSize: 10, padding: '0 6px' }}>
+                            {aed.available ? '可用' : '维修'}
+                          </Tag>
+                        </div>
+                        <div style={{ fontSize: 13, color: '#999', marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {aed.address}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 14, color: '#1890ff', fontWeight: 500 }}>
+                            📍 {formatDistance(aed.distance || 0)}
+                          </span>
+                          <span style={{ fontSize: 12, color: '#1890ff' }}>
+                            导航 →
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </List>
+              </div>
             </div>
           </div>
         ) : activeTab === 'knowledge' ? (
-          <div style={{ padding: 12 }}>
+          <div style={{ padding: 16 }}>
+            <div style={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: 12,
+              padding: 20,
+              marginBottom: 16,
+              color: '#fff'
+            }}>
+              <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>急救科普</div>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>学习急救知识，关键时刻能救命</div>
+            </div>
+            
             {[
-              { title: 'AED 是什么？', content: '自动体外除颤器，可以自动分析心律并给予电击除颤，被誉为"救命神器"。', tag: '知识' },
-              { title: '如何使用 AED', content: '1. 打开电源\n2. 贴电极片\n3. 等待分析\n4. 按除颤键', tag: '教程' },
-              { title: '心肺复苏步骤', content: 'C-按压：5-6cm深\nA-开放气道\nB-人工呼吸：2次', tag: '教程' },
+              { title: 'AED 是什么？', content: '自动体外除颤器（AED）是一种便携式医疗设备，可以自动分析心律并给予电击除颤，被誉为"救命神器"。', tag: '知识', icon: '💡' },
+              { title: '如何使用 AED', content: '1. 打开电源\n2. 贴电极片\n3. 等待分析\n4. 按除颤键', tag: '教程', icon: '📖' },
+              { title: '心肺复苏步骤', content: 'C-按压：5-6cm深，100-120次/分\nA-开放气道\nB-人工呼吸：2次', tag: '教程', icon: '❤️' },
             ].map((item, idx) => (
-              <Card key={idx} style={{ marginBottom: 10, borderRadius: 8 }}>
-                <Tag color={item.tag === '教程' ? 'primary' : 'success'} style={{ marginBottom: 8, fontSize: 10 }}>{item.tag}</Tag>
-                <h3 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 600 }}>{item.title}</h3>
-                <p style={{ margin: 0, fontSize: 13, color: '#666', whiteSpace: 'pre-line', lineHeight: 1.6 }}>{item.content}</p>
-              </Card>
+              <div 
+                key={idx} 
+                style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  padding: 16,
+                  marginBottom: 12,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <Tag color={item.tag === '教程' ? 'primary' : 'success'} style={{ fontSize: 10 }}>
+                    {item.tag}
+                  </Tag>
+                </div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: '#1a1a1a' }}>{item.title}</h3>
+                <p style={{ margin: 0, fontSize: 13, color: '#666', whiteSpace: 'pre-line', lineHeight: 1.7 }}>{item.content}</p>
+              </div>
             ))}
           </div>
         ) : (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#f7f8fa' }}>
+            {/* 聊天区 */}
+            <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
               {aiMessages.map((msg, idx) => (
                 <div key={idx} style={{ 
                   display: 'flex', 
                   justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  marginBottom: 10
+                  marginBottom: 12
                 }}>
                   <div style={{
                     maxWidth: '75%',
-                    padding: '8px 12px',
-                    borderRadius: 10,
-                    background: msg.role === 'user' ? '#1890ff' : '#fff',
+                    padding: '12px 16px',
+                    borderRadius: 16,
+                    background: msg.role === 'user' ? '#1677ff' : '#fff',
                     color: msg.role === 'user' ? '#fff' : '#333',
-                    fontSize: 13,
-                    lineHeight: 1.5,
-                    whiteSpace: 'pre-line'
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-line',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.08)'
                   }}>
                     {msg.content}
                   </div>
@@ -213,89 +277,98 @@ export default function Home() {
               ))}
             </div>
             
-            <div style={{ padding: '6px 12px', display: 'flex', gap: 6, overflowX: 'auto', background: '#fafafa' }}>
-              {['如何使用AED', '心肺复苏', '拨打120'].map(q => (
+            {/* 快捷问题 */}
+            <div style={{ padding: '8px 16px', display: 'flex', gap: 8, overflowX: 'auto', background: '#fff' }}>
+              {['如何使用AED', '心肺复苏方法', '拨打120技巧'].map(q => (
                 <button 
                   key={q} 
                   onClick={() => setAiInput(q)}
                   style={{
-                    padding: '5px 10px',
+                    padding: '6px 14px',
                     border: '1px solid #e8e8e8',
-                    borderRadius: 14,
-                    background: '#fff',
+                    borderRadius: 16,
+                    background: '#fafafa',
                     fontSize: 12,
                     color: '#666',
                     whiteSpace: 'nowrap',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    flexShrink: 0
                   }}
                 >{q}</button>
               ))}
             </div>
             
-            <div style={{ padding: 10, background: '#fff', borderTop: '1px solid #f0f0f0' }}>
-              <div style={{ display: 'flex', gap: 8 }}>
+            {/* 输入区 */}
+            <div style={{ padding: 12, background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <input
                   type="text"
                   value={aiInput}
                   onChange={(e) => setAiInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && sendAi()}
-                  placeholder="输入问题..."
+                  placeholder="输入急救问题..."
                   style={{
                     flex: 1,
-                    padding: '8px 12px',
+                    padding: '10px 16px',
                     border: '1px solid #e8e8e8',
-                    borderRadius: 20,
-                    fontSize: 13,
-                    outline: 'none'
+                    borderRadius: 24,
+                    fontSize: 14,
+                    outline: 'none',
+                    background: '#fafafa'
                   }}
                 />
                 <button
                   onClick={sendAi}
                   style={{
-                    padding: '8px 16px',
-                    background: '#1890ff',
-                    color: '#fff',
+                    width: 44,
+                    height: 44,
+                    background: aiInput.trim() ? '#1677ff' : '#e8e8e8',
+                    color: aiInput.trim() ? '#fff' : '#999',
                     border: 'none',
-                    borderRadius: 20,
-                    fontSize: 13,
-                    cursor: 'pointer'
+                    borderRadius: '50%',
+                    fontSize: 18,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
-                >发送</button>
+                >➤</button>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* 底部导航 + 紧急电话 */}
+      {/* 底部 */}
       <footer style={{ 
         background: '#fff', 
         borderTop: '1px solid #f0f0f0',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
-        {/* 紧急电话栏 */}
+        {/* 紧急电话 */}
         <div style={{ 
           display: 'flex',
-          padding: '8px 16px',
-          gap: 10,
+          padding: '10px 16px',
+          gap: 12,
           borderBottom: '1px solid #f5f5f5'
         }}>
           <a 
             href="tel:120"
             style={{
               flex: 1,
-              padding: '12px 0',
-              background: '#ff4d4f',
+              padding: '14px 0',
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)',
               color: '#fff',
-              borderRadius: 8,
+              borderRadius: 10,
               textAlign: 'center',
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
               textDecoration: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 6
+              gap: 8,
+              boxShadow: '0 2px 8px rgba(238,90,90,0.3)'
             }}
           >
             🚑 拨打 120
@@ -304,18 +377,19 @@ export default function Home() {
             href="tel:119"
             style={{
               flex: 1,
-              padding: '12px 0',
-              background: '#fa8c16',
+              padding: '14px 0',
+              background: 'linear-gradient(135deg, #ffa940 0%, #fa8c16 100%)',
               color: '#fff',
-              borderRadius: 8,
+              borderRadius: 10,
               textAlign: 'center',
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
               textDecoration: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 6
+              gap: 8,
+              boxShadow: '0 2px 8px rgba(250,140,22,0.3)'
             }}
           >
             🚒 拨打 119
@@ -325,7 +399,7 @@ export default function Home() {
         {/* Tab 导航 */}
         <div style={{ 
           display: 'flex', 
-          padding: '8px 0'
+          padding: '6px 0'
         }}>
           {[
             { key: 'map', label: '定位', icon: '📍' },
@@ -339,18 +413,18 @@ export default function Home() {
                 flex: 1,
                 border: 'none',
                 background: 'transparent',
-                padding: '6px 0',
+                padding: '8px 0',
                 fontSize: 12,
-                color: activeTab === tab.key ? '#1890ff' : '#999',
+                color: activeTab === tab.key ? '#1677ff' : '#999',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2
+                gap: 4
               }}
             >
-              <span style={{ fontSize: 20 }}>{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span style={{ fontSize: 22 }}>{tab.icon}</span>
+              <span style={{ fontWeight: activeTab === tab.key ? 600 : 400 }}>{tab.label}</span>
             </button>
           ))}
         </div>
