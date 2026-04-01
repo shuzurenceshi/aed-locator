@@ -66,10 +66,15 @@ export default function Home() {
 
   // 定位
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => { setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLoading(false); },
-      () => { setUserLocation({ lat: 39.9042, lng: 116.4074 }); setLoading(false); }
-    ) || setLoading(false);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLoading(false); },
+        () => { setUserLocation({ lat: 39.9042, lng: 116.4074 }); setLoading(false); }
+      );
+    } else {
+      setUserLocation({ lat: 39.9042, lng: 116.4074 });
+      setLoading(false);
+    }
   }, []);
 
   // 排序
