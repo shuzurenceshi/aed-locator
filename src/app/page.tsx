@@ -181,7 +181,7 @@ export default function Home() {
               { title: '如何使用 AED', content: '1. 打开电源\n2. 贴电极片\n3. 等待分析\n4. 按除颤键', tag: '教程' },
               { title: '心肺复苏步骤', content: 'C-按压：5-6cm深\nA-开放气道\nB-人工呼吸：2次', tag: '教程' },
             ].map((item, idx) => (
-              <Card key={idx} style={{ marginBottom: 10, '--border-radius': '8px' }}>
+              <Card key={idx} style={{ marginBottom: 10, borderRadius: 8 }}>
                 <Tag color={item.tag === '教程' ? 'primary' : 'success'} style={{ marginBottom: 8, fontSize: 10 }}>{item.tag}</Tag>
                 <h3 style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 600 }}>{item.title}</h3>
                 <p style={{ margin: 0, fontSize: 13, color: '#666', whiteSpace: 'pre-line', lineHeight: 1.6 }}>{item.content}</p>
