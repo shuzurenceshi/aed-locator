@@ -1,7 +1,31 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { AED, Article } from '@/types';
+
+// 类型定义
+interface AED {
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  available: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  distance?: number;
+}
+
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  sort_order: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 // 计算距离
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
